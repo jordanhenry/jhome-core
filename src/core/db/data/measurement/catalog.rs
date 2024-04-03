@@ -1,9 +1,9 @@
 use crate::core::db::{Db, Record};
 use crate::core::model::data::measurement::catalog::MeasurementCatalog;
 use anyhow::Result;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct MeasurementCatalogDb {
     id: String,
     name: String,
@@ -17,6 +17,24 @@ impl MeasurementCatalog {
 
     pub fn get_db_relate_name() -> String {
         String::from("device_measurement_catalog")
+    }
+
+    pub async fn get(db: &Db, id: String) -> Result<Option<MeasurementCatalog>> {
+        let catalog: Option<MeasurementCatalogDb> = db
+            .get_db()
+            .select((MeasurementCatalog::get_db_table_name(), id))
+            .await?;
+
+        let catalog = match catalog {
+            Some(catalog) => catalog,
+            None => return Ok(None),
+        };
+
+        let catalog = MeasurementCatalog::new(catalog.id, catalog.name, catalog.description);
+
+        TODO meas_def
+
+        Ok(Some(catalog))
     }
 
     pub async fn push(&self, db: &Db) -> Result<String> {

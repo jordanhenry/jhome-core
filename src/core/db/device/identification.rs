@@ -11,19 +11,20 @@ impl Identification {
         String::from("device_identification")
     }
 
-    pub async fn get(db: &Db, id: String) -> Result<Identification> {
-        let table_name = Identification::get_db_table_name();
-
-        let identification: Option<Identification> = db.get_db().select((table_name, id)).await?;
+    pub async fn get(db: &Db, id: String) -> Result<Option<Identification>> {
+        let identification: Option<Identification> = db
+            .get_db()
+            .select((Identification::get_db_table_name(), id))
+            .await?;
 
         if let Some(identification) = identification {
-            Ok(identification)
+            Ok(Some(identification))
         } else {
-            Err(anyhow!("Identification not found"))
+            Ok(None)
         }
     }
 
-    pub async fn get_from_relation(db: &Db, id_in: String) -> Result<Identification> {
+    pub async fn get_from_relation(db: &Db, id_in: String) -> Result<Option<Identification>> {
         let sql = format!(
             "SELECT out FROM {} WHERE in=\"{}\";",
             Identification::get_db_relate_name(),
@@ -35,7 +36,7 @@ impl Identification {
         let identification_id: Option<String> = ret.take(0)?;
         let identification_id = match identification_id {
             Some(identification_id) => identification_id,
-            None => return Err(anyhow!("Identification not found")),
+            None => return Ok(None),
         };
 
         Identification::get(db, identification_id).await
