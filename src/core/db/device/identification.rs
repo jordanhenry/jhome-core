@@ -1,6 +1,6 @@
 use crate::core::db::{Db, Record};
-use crate::core::model::device::identification::Identification;
-use anyhow::Result;
+use crate::core::model::device::identification::{self, Identification};
+use anyhow::{anyhow, Result};
 
 impl Identification {
     pub fn get_db_table_name() -> String {
@@ -9,6 +9,36 @@ impl Identification {
 
     pub fn get_db_relate_name() -> String {
         String::from("device_identification")
+    }
+
+    pub async fn get(db: &Db, id: String) -> Result<Identification> {
+        let table_name = Identification::get_db_table_name();
+
+        let identification: Option<Identification> = db.get_db().select((table_name, id)).await?;
+
+        if let Some(identification) = identification {
+            Ok(identification)
+        } else {
+            Err(anyhow!("Identification not found"))
+        }
+    }
+
+    pub async fn get_from_relation(db: &Db, id_in: String) -> Result<Identification> {
+        let sql = format!(
+            "SELECT out FROM {} WHERE in=\"{}\";",
+            Identification::get_db_relate_name(),
+            id_in
+        );
+
+        let mut ret = db.get_db().query(sql).await?;
+
+        let identification_id: Option<String> = ret.take(0)?;
+        let identification_id = match identification_id {
+            Some(identification_id) => identification_id,
+            None => return Err(anyhow!("Identification not found")),
+        };
+
+        Identification::get(db, identification_id).await
     }
 
     pub async fn push(&self, db: &Db) -> Result<String> {

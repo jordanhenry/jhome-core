@@ -1,4 +1,5 @@
 use crate::core::db::{Db, Record};
+use crate::core::model::device::identification::Identification;
 use crate::core::model::device::DeviceModel;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
@@ -17,8 +18,20 @@ impl DeviceModel {
     }
 
     pub async fn get_all(db: &Db) -> Result<Vec<DeviceModel>> {
-        let ret: Vec<DeviceModel> = db.get_db().select(DeviceModel::get_db_table_name()).await?;
-        Ok(ret)
+        //Get device list
+        let device_list: Vec<DeviceModelDb> =
+            db.get_db().select(DeviceModel::get_db_table_name()).await?;
+
+        let devices: Vec<DeviceModel> = Vec::new();
+        for device_id in device_list.iter() {
+            //Identification
+            let identification =
+                Identification::get_from_relation(db, device_id.id.to_string()).await?;
+
+            //Measurement Catalog
+        }
+
+        Ok(devices)
     }
 
     pub fn get_device_table_id(&self) -> String {

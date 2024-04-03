@@ -20,9 +20,9 @@ pub struct DeviceModel {
 }
 
 impl DeviceModel {
-    pub fn new(id: String, name: String) -> DeviceModel {
+    pub fn new(id: String, name: String, r#type: DeviceType) -> DeviceModel {
         DeviceModel {
-            device_identification: Identification::new(id, name, DeviceType::Gateway),
+            device_identification: Identification::new(id, name, r#type),
             measurement_catalog: None,
             measurements: None,
             unit_catalog: None,
