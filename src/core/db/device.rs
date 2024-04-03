@@ -16,6 +16,11 @@ impl DeviceModel {
         String::from("device")
     }
 
+    pub async fn get_all(db: &Db) -> Result<Vec<DeviceModel>> {
+        let ret: Vec<DeviceModel> = db.get_db().select(DeviceModel::get_db_table_name()).await?;
+        Ok(ret)
+    }
+
     pub fn get_device_table_id(&self) -> String {
         let table_name = DeviceModel::get_db_table_name();
         format!("{}:⟨{}⟩", table_name, self.get_device_id())
