@@ -21,4 +21,12 @@ impl Identification {
     pub fn get_id(&self) -> &String {
         &self.id
     }
+
+    pub fn get_name(&self) -> &String {
+        &self.name
+    }
+
+    pub fn get_type(&self) -> &DeviceType {
+        &self.r#type
+    }
 }

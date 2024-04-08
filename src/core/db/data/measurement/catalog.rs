@@ -1,7 +1,10 @@
 use crate::core::db::{Db, Record};
 use crate::core::model::data::measurement::catalog::MeasurementCatalog;
+use crate::core::model::data::measurement::definition::MeasurementDefinition;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+
+use super::measurement;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct MeasurementCatalogDb {
@@ -30,11 +33,34 @@ impl MeasurementCatalog {
             None => return Ok(None),
         };
 
-        let catalog = MeasurementCatalog::new(catalog.id, catalog.name, catalog.description);
+        let mut catalog = MeasurementCatalog::new(catalog.id, catalog.name, catalog.description);
 
-        TODO meas_def
+        let measurement_definitions =
+            MeasurementDefinition::get_from_relation(db, catalog.get_id().clone()).await?;
+
+        if let Some(measurement_definitions) = measurement_definitions {
+            catalog.add_measurement_definitions(measurement_definitions);
+        }
 
         Ok(Some(catalog))
+    }
+
+    pub async fn get_from_relation(db: &Db, id_in: String) -> Result<Option<MeasurementCatalog>> {
+        let sql = format!(
+            "SELECT out FROM {} WHERE in=\"{}\";",
+            MeasurementCatalog::get_db_relate_name(),
+            id_in
+        );
+
+        let mut ret = db.get_db().query(sql).await?;
+
+        let catalog_id: Option<String> = ret.take(0)?;
+        let catalog_id = match catalog_id {
+            Some(catalog_id) => catalog_id,
+            None => return Ok(None),
+        };
+
+        MeasurementCatalog::get(db, catalog_id).await
     }
 
     pub async fn push(&self, db: &Db) -> Result<String> {

@@ -1,4 +1,6 @@
 use crate::core::db::{Db, Record};
+use crate::core::model::data::measurement::catalog::MeasurementCatalog;
+use crate::core::model::data::measurement::measurement::Measurement;
 use crate::core::model::device::identification::Identification;
 use crate::core::model::device::DeviceModel;
 use anyhow::Result;
@@ -22,13 +24,39 @@ impl DeviceModel {
         let device_list: Vec<DeviceModelDb> =
             db.get_db().select(DeviceModel::get_db_table_name()).await?;
 
-        let devices: Vec<DeviceModel> = Vec::new();
+        let mut devices: Vec<DeviceModel> = Vec::new();
         for device_id in device_list.iter() {
             //Identification
             let identification =
                 Identification::get_from_relation(db, device_id.id.to_string()).await?;
 
             //Measurement Catalog
+            let measurement_catalog =
+                MeasurementCatalog::get_from_relation(db, device_id.id.to_string()).await?;
+
+            //Measurment
+            let measurements = Measurement::get_from_relation(db, device_id.id.to_string()).await?;
+
+            //Unit catalog
+            //Device composition
+
+            if let Some(identification) = identification {
+                let mut device = DeviceModel::new(
+                    identification.get_id().clone(),
+                    identification.get_name().clone(),
+                    identification.get_type().clone(),
+                );
+
+                if let Some(measurement_catalog) = measurement_catalog {
+                    device.set_measurement_catalog(measurement_catalog);
+                }
+
+                if let Some(measurements) = measurements {
+                    device.set_measurements(measurements);
+                }
+
+                devices.push(device);
+            }
         }
 
         Ok(devices)

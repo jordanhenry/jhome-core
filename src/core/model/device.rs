@@ -1,5 +1,6 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use std::borrow::Borrow;
 use std::collections::HashMap;
 
 use crate::core::model::data::measurement::catalog::MeasurementCatalog;
@@ -7,6 +8,8 @@ use crate::core::model::data::measurement::measurement::Measurement;
 use crate::core::model::data::unit::catalog::UnitCatalog;
 use crate::core::model::device::identification::{DeviceType, Identification};
 use crate::core::model::system::composition::Composition;
+
+use super::data::measurement;
 
 pub mod identification;
 
@@ -47,12 +50,24 @@ impl DeviceModel {
         &self.measurements
     }
 
+    pub fn set_measurements(&mut self, measurements: Vec<Measurement>) {
+        let mut measurements_map = HashMap::new();
+        for measurement in measurements.iter() {
+            measurements_map.insert(measurement.get_id().clone(), measurement.to_owned());
+        }
+        self.measurements = Some(measurements_map);
+    }
+
     pub fn get_measurement_catalog(&self) -> &Option<MeasurementCatalog> {
         &self.measurement_catalog
     }
 
     pub fn get_mut_measurement_catalog(&mut self) -> &mut Option<MeasurementCatalog> {
         &mut self.measurement_catalog
+    }
+
+    pub fn set_measurement_catalog(&mut self, catalog: MeasurementCatalog) {
+        self.measurement_catalog = Some(catalog);
     }
 
     pub fn load_measurement_catalog_from_json(&mut self, json: String) -> Result<()> {
