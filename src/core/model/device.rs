@@ -13,7 +13,7 @@ use super::data::measurement;
 
 pub mod identification;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DeviceModel {
     device_identification: Identification,
     measurement_catalog: Option<MeasurementCatalog>,
@@ -31,11 +31,16 @@ impl DeviceModel {
             unit_catalog: None,
             device_composition: None,
         }
-    }
+    }    
 
     pub fn load_from_json(json: String) -> Result<DeviceModel> {
         let gateway = serde_json::from_str::<DeviceModel>(&json)?;
         Ok(gateway)
+    }
+
+    pub fn dump(&self) {
+        let json = serde_json::to_string_pretty(self).unwrap();
+        println!("{}", json);
     }
 
     pub fn get_device_id(&self) -> &String {

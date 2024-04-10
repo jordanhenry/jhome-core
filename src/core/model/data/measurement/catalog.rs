@@ -4,7 +4,7 @@ use crate::core::model::data::measurement::definition::MeasurementDefinition;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct MeasurementCatalog {
     id: String,
     name: String,

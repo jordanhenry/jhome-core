@@ -3,7 +3,7 @@ use crate::core::model::data::unit::unit::Unit;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct UnitCatalog {
     id: String,
     name: String,
